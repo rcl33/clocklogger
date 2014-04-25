@@ -18,16 +18,17 @@ class TextFileWriter(object):
             np.float64: '%.6f',
         }
         time = data['time']
+        data['time'] = data['time'].isoformat()
         fn = os.path.join(self.path, time.strftime(self.pattern))
         if self.file is None or self.file.name != fn:
             if self.file is not None: self.file.close()
             if not os.path.exists(os.path.dirname(fn)):
                 os.makedirs(os.path.dirname(fn))
             file_already_existed = os.path.exists(fn)
-            self.file = open(fn, 'wt')
+            self.file = open(fn, 'at')
             if not file_already_existed:
                 self.file.write("\t".join(cols) + "\n")
-        print repr(type(data[cols[1]]))
+            print "Opened %s file %s" % ("existing" if file_already_existed else "new", fn)
         self.file.write("\t".join(formats.get(type(data[k]), "%s") %
                                   data[k] for k in cols) + "\n")
         self.file.flush()
