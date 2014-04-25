@@ -79,7 +79,6 @@ class ClockAnalyser(object):
 
     def generate_edge_groups(self, fit_decay=False):
         """Read samples from source, and generate indices of edge groups"""
-        flog = open('edge_log.txt', 'wt')
         while True:
             # Read some samples
             num_samples = 6 * self.source.fs
@@ -91,15 +90,13 @@ class ClockAnalyser(object):
             # Analyse to find edges
             i_pos_pps,  i_neg_pps  = self.find_edges(samples[:,self.source.CHANNEL_PPS ])
             i_pos_tick, i_neg_tick = self.find_edges(samples[:,self.source.CHANNEL_TICK])
-            flog.write("\t".join(map(str, [i_pos_pps[0], i_neg_pps[0], i_pos_tick[0], i_neg_tick[0]])))
+
             # Fit decay to improve accuracy if required
             if fit_decay:
                 i_pos_pps  = self.fit_decays( samples[:,self.source.CHANNEL_PPS ], i_pos_pps)
                 i_neg_pps  = self.fit_decays(-samples[:,self.source.CHANNEL_PPS ], i_neg_pps)
                 i_pos_tick = self.fit_decays( samples[:,self.source.CHANNEL_TICK], i_pos_tick)
                 i_neg_tick = self.fit_decays(-samples[:,self.source.CHANNEL_TICK], i_neg_tick)
-            flog.write("\t".join(map(str, ["", i_pos_pps[0], i_neg_pps[0], i_pos_tick[0], i_neg_tick[0]])))
-            flog.write("\n")
 
             # Find which is the 'down' tick: the IR signal looks like this:
             #
@@ -116,10 +113,16 @@ class ClockAnalyser(object):
             if len(i_pos_tick) < 3:
                 print "Not enough ticks"
                 if PLOT:
-                    plt.clf()
-                    plt.plot(samples[:,self.source.CHANNEL_TICK])
-                    for i in i_pos_tick: plt.axvline(i, c='g')
-                    for i in i_neg_tick: plt.axvline(i, c='r')
+                    #plt.clf()
+                    fig, ax = plt.subplots(2, sharex=True)
+                    ax[0].plot(samples[:, 0]) #[:,self.source.CHANNEL_TICK])
+                    ax[1].plot(samples[:, 1])
+                    ax[0].set_title('tick')
+                    ax[1].set_title('pps')
+                    for i in i_pos_tick: ax[0].axvline(i, c='g')
+                    for i in i_neg_tick: ax[0].axvline(i, c='r')
+                    for i in i_pos_pps: ax[1].axvline(i, c='g')
+                    for i in i_neg_pps: ax[1].axvline(i, c='r')
                     plt.show()
                     plt.draw()
                 self.source.consume(len(samples))
@@ -145,16 +148,28 @@ class ClockAnalyser(object):
             i_pos_pps  = [i for i in i_pos_pps  if i >= iref]
             i_neg_pps  = [i for i in i_neg_pps  if i >= iref]
 
+            # XXX This is messy, checking multiple times
+            if len(i_pos_tick) < 3:
+                print "Not enough ticks after down-swing"
+                self.source.consume(len(samples))
+                continue
+
             if PLOT:
-                plt.clf()
-                plt.plot(samples)
-                for i in i_pos_tick: plt.axvline(i, c='g')
-                for i in i_neg_tick: plt.axvline(i, c='r')
-                plt.axvline(i_put_back, c='k', lw='2')
-                plt.plot(int(iref), samples[int(iref), self.source.CHANNEL_TICK], 'o')
-                plt.axvline(iref, ls='--', c='k')
-                plt.draw()
+                #plt.clf()
+                fig, ax = plt.subplots(2, sharex=True)
+                ax[0].plot(samples[:, 0]) #[:,self.source.CHANNEL_TICK])
+                ax[1].plot(samples[:, 1])
+                ax[0].set_title('tick')
+                ax[1].set_title('pps')
+                for i in i_pos_tick: ax[0].axvline(i, c='g')
+                for i in i_neg_tick: ax[0].axvline(i, c='r')
+                for i in i_pos_pps: ax[1].axvline(i, c='g')
+                for i in i_neg_pps: ax[1].axvline(i, c='r')
+                ax[0].axvline(i_put_back, c='k', lw='2')
+                ax[0].plot(int(iref), samples[int(iref), self.source.CHANNEL_TICK], 'o')
+                ax[0].axvline(iref, ls='--', c='k')
                 plt.show()
+                plt.draw()
 
             # Time of reference tick
             t = self.source.time + timedelta(seconds = iref / self.source.fs)
@@ -164,7 +179,6 @@ class ClockAnalyser(object):
             self.source.consume(i_put_back)
 
             yield t, (i_pos_pps, i_neg_pps), (i_pos_tick, i_neg_tick)
-        flog.close()
 
     def find_edges(self, samples):
         above = (samples >  self.edge_level).astype(int)
