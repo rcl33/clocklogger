@@ -83,7 +83,7 @@ class ClockAnalyser(object):
             # Read some samples
             num_samples = 6 * self.source.fs
             try:
-                samples = self.source.get_samples(num_samples)
+                samples = -self.source.get_samples(num_samples)
             except EOFError:
                 break
 
