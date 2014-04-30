@@ -1,5 +1,11 @@
 import os, os.path
+from datetime import datetime, timedelta
 import numpy as np
+
+
+def datetime_to_epoch(d):
+    return int((d - datetime(1970, 1, 1)).total_seconds())
+
 
 class TextFileWriter(object):
     def __init__(self, path, columns=None):
@@ -18,7 +24,9 @@ class TextFileWriter(object):
             np.float64: '%.6f',
         }
         time = data['time']
-        data['time'] = data['time'].isoformat()
+        #data['time'] = data['time'].isoformat()
+        data = dict(data)
+        data['time'] = datetime_to_epoch(time)
         fn = os.path.join(self.path, time.strftime(self.pattern))
         if self.file is None or self.file.name != fn:
             if self.file is not None: self.file.close()
@@ -32,3 +40,48 @@ class TextFileWriter(object):
         self.file.write("\t".join(formats.get(type(data[k]), "%s") %
                                   data[k] for k in cols) + "\n")
         self.file.flush()
+
+
+from influxdb import client as influxdb
+
+class InfluxDBWriter(object):
+    def __init__(self, columns):
+        self.columns = columns
+        self.db = influxdb.InfluxDBClient('localhost', 8086, 'clocklogger', 'pendulum', 'clock')
+        print "Opened connection to InfluxDB"
+
+    def write(self, data):
+        data = dict(data)
+        data['time'] = datetime_to_epoch(data['time'])
+        points = [
+            {
+                "name":    "clock",
+                "columns": self.columns,
+                "points":  [[data[k] for k in self.columns]],
+            }
+        ]
+        self.db.write_points_with_precision(points, 's')
+
+
+from tempodb.client import Client
+from tempodb.protocol import DataPoint
+
+class TempoDBWriter(object):
+    DATABASE_ID = "clock"
+    API_KEY = "34dc77a63b4f4c62bbf676e66e5e9129"
+    API_SECRET = "988f68a9ce354eaa8d521a8164b20518"
+
+    def __init__(self, columns):
+        self.columns = columns
+        self.client = Client(self.DATABASE_ID, self.API_KEY,
+                             self.API_SECRET)
+
+    def write(self, data):
+        t = data['time']
+        print data
+        points = [DataPoint.from_data(t, float(data[k]), key='clock.%s' % k)
+                  for k in self.columns if k != 'time']
+        resp = self.client.write_multi(points)
+        if resp.status != 200:
+            raise Exception("TempoDB error [%d] %s" %
+                            (resp.status, resp.error))
