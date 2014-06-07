@@ -65,16 +65,21 @@ class InfluxDBWriter(object):
 
 from tempodb.client import Client
 from tempodb.protocol import DataPoint
+import os
 
 class TempoDBWriter(object):
     DATABASE_ID = "clock"
-    API_KEY = "34dc77a63b4f4c62bbf676e66e5e9129"
-    API_SECRET = "988f68a9ce354eaa8d521a8164b20518"
 
     def __init__(self, columns):
+        try:
+            api_key = os.environ['TEMPODB_API_KEY']
+            api_sec = os.environ['TEMPODB_API_SECRET']
+        except KeyError:
+            raise Exception("You must define environment variables "
+                            "TEMPODB_API_KEY and TEMPODB_API_SECRET")
+
         self.columns = columns
-        self.client = Client(self.DATABASE_ID, self.API_KEY,
-                             self.API_SECRET)
+        self.client = Client(self.DATABASE_ID, api_key, api_sec)
 
     def write(self, data):
         t = data['time']
