@@ -1,7 +1,9 @@
 import time
 from input import PrerecordedDataSource, SoundCardDataSource
 from analysis import ClockAnalyser, DataError
-from output import TextFileWriter, InfluxDBWriter, TempoDBWriter
+from output.textfile import TextFileWriter
+from output.influxdb import InfluxDBWriter
+from output.tempodb import TempoDBWriter
 
 
 def get_last_drift():
