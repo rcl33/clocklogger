@@ -44,3 +44,10 @@ class TempoDBWriterTestCase(unittest.TestCase):
                          set([data['a'], data['b']]))
         self.assertEqual(set([point.key for point in args[0]]),
                          set(['clock.a', 'clock.b']))
+
+    def test_write_method_raises_exception_on_error(self):
+        writer = self._make_writer(['a', 'b'])
+        writer.client.write_multi.return_value = MockResponse(404, 'not ok')
+        data = {'time': datetime.now(), 'a': 2.3, 'b': 4.3, 'c': 3.4}
+
+        self.assertRaises(Exception, writer.write, data)

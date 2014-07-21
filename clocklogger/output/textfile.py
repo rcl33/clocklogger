@@ -41,7 +41,6 @@ class TextFileWriter(object):
                 self.file.write("\t".join(cols) + "\n")
             print("Opened %s file %s" %
                   ("existing" if file_already_existed else "new", fn))
-        print([type(data[k]) for k in cols])
         self.file.write("\t".join(formats.get(type(data[k]), "%s") %
                                   data[k] for k in cols) + "\n")
         self.file.flush()

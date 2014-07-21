@@ -2,6 +2,8 @@ import unittest
 from mock import patch, mock_open, call, MagicMock
 import os
 import os.path
+from tempfile import mkdtemp
+import shutil
 from datetime import datetime, timedelta
 import numpy as np
 
@@ -9,10 +11,14 @@ from clocklogger.output.textfile import TextFileWriter
 
 
 class TextFileWriterTestCase(unittest.TestCase):
-    PATH = '/tmp/test/path'
+    def setUp(self):
+        self.path = mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.path)
 
     def test_opens_and_closes_file(self):
-        writer = TextFileWriter(self.PATH, ['a', 'b'])
+        writer = TextFileWriter(self.path, ['a', 'b'])
         data = {'time': datetime(2014, 2, 3, 10, 30, 23),
                 'a': 2.3, 'b': 4.3, 'c': 3.4}
 
@@ -21,7 +27,7 @@ class TextFileWriterTestCase(unittest.TestCase):
             writer.write(data)
 
         # Check correct filename was opened
-        expected_path = os.path.join(self.PATH, '2014/02/clock-2014-02-03.txt')
+        expected_path = os.path.join(self.path, '2014/02/clock-2014-02-03.txt')
         m.assert_called_once_with(expected_path, 'at')
 
         # Check file is closed when writer is deleted
@@ -30,7 +36,7 @@ class TextFileWriterTestCase(unittest.TestCase):
         f.close.assert_called_once_with()
 
     def test_changes_file_at_midnight(self):
-        writer = TextFileWriter(self.PATH, ['a', 'b'])
+        writer = TextFileWriter(self.path, ['a', 'b'])
         data = {'time': datetime(2014, 2, 3, 23, 59, 0),
                 'a': 2.3, 'b': 4.3, 'c': 3.4}
 
@@ -45,7 +51,7 @@ class TextFileWriterTestCase(unittest.TestCase):
             # First write - old file
             writer.write(data)
             f = writer.file
-            expected1 = os.path.join(self.PATH, '2014/02/clock-2014-02-03.txt')
+            expected1 = os.path.join(self.path, '2014/02/clock-2014-02-03.txt')
             m.assert_called_once_with(expected1, 'at')
 
             # Next point - still old file
@@ -56,7 +62,7 @@ class TextFileWriterTestCase(unittest.TestCase):
 
             # Next point - midnight - new file
             data['time'] += timedelta(seconds=30)
-            expected2 = os.path.join(self.PATH, '2014/02/clock-2014-02-04.txt')
+            expected2 = os.path.join(self.path, '2014/02/clock-2014-02-04.txt')
             writer.write(data)
             self.assertEqual(m.call_count, 2)
             m.assert_has_calls([call(expected1, 'at'),
@@ -70,7 +76,7 @@ class TextFileWriterTestCase(unittest.TestCase):
             self.assertEqual(f.close.call_count, 1)
 
     def test_output(self):
-        writer = TextFileWriter(self.PATH, ['time', 'a', 'b'])
+        writer = TextFileWriter(self.path, ['time', 'a', 'b'])
         data1 = {'time': datetime(1970, 1, 1, 0, 0, 0),
                  'a': 2.3, 'b': 4.328392012, 'c': 3.4}
         data2 = {'time': datetime(1970, 1, 1, 13, 0, 4),
