@@ -5,8 +5,8 @@ from collections import namedtuple
 import os
 from datetime import datetime
 
-import output.tempodb
-from output.tempodb import TempoDBWriter
+import clocklogger.output.tempodb
+from clocklogger.output.tempodb import TempoDBWriter
 
 
 MockResponse = namedtuple('MockResponse', ['status', 'error'])
@@ -17,7 +17,7 @@ class TempoDBWriterTestCase(unittest.TestCase):
         with patch.dict(os.environ,
                         TEMPODB_API_KEY='<<key>>',
                         TEMPODB_API_SECRET='<<secret>>'):
-            with patch('output.tempodb.Client') as c:
+            with patch('clocklogger.output.tempodb.Client') as c:
                 writer = TempoDBWriter(columns)
             c.assert_called_once_with('clock', '<<key>>', '<<secret>>')
         return writer
