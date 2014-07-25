@@ -46,8 +46,8 @@ def main():
         except Exception as err:
             print "Error creating %s: %s" % (cls, err)
     add_writer(TextFileWriter, 'data', 'clock', columns)
-    add_writer(InfluxDBWriter, columns)
-    add_writer(TempoDBWriter, columns)
+    add_writer(InfluxDBWriter, 'clock', columns)
+    add_writer(TempoDBWriter, 'clock', columns)
 
     # Read samples, analyze
     while True:

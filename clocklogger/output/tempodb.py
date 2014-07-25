@@ -9,7 +9,7 @@ from tempodb.protocol import DataPoint
 class TempoDBWriter(object):
     DATABASE_ID = "clock"
 
-    def __init__(self, columns):
+    def __init__(self, base_key, columns):
         try:
             api_key = os.environ['TEMPODB_API_KEY']
             api_sec = os.environ['TEMPODB_API_SECRET']
@@ -17,13 +17,15 @@ class TempoDBWriter(object):
             raise RuntimeError("You must define environment variables "
                                "TEMPODB_API_KEY and TEMPODB_API_SECRET")
 
+        self.base_key = base_key
         self.columns = columns
         self.client = Client(self.DATABASE_ID, api_key, api_sec)
 
     def write(self, data):
         t = data['time']
         print(data)
-        points = [DataPoint.from_data(t, float(data[k]), key='clock.%s' % k)
+        points = [DataPoint.from_data(t, float(data[k]),
+                                      key='%s.%s' % (self.base_key, k))
                   for k in self.columns if k != 'time']
         resp = self.client.write_multi(points)
         if resp.status != 200:

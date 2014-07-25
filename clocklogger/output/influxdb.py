@@ -12,9 +12,10 @@ def datetime_to_epoch(d):
 
 
 class InfluxDBWriter(object):
-    def __init__(self, columns):
+    def __init__(self, base_key, columns):
         if influxdb is None:
             raise ImportError("Could not import influxdb package")
+        self.base_key = base_key
         self.columns = columns
         self.db = influxdb.InfluxDBClient('localhost', 8086,
                                           'clocklogger', 'pendulum', 'clock')
@@ -26,7 +27,7 @@ class InfluxDBWriter(object):
         points = [
             {
                 "name":    "clock",
-                "columns": self.columns,
+                "columns": ["%s.%s" % (self.base_key, k) for k in self.columns],
                 "points":  [[data[k] for k in self.columns]],
             }
         ]

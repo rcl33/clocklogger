@@ -18,16 +18,15 @@ class TempoDBWriterTestCase(unittest.TestCase):
                         TEMPODB_API_KEY='<<key>>',
                         TEMPODB_API_SECRET='<<secret>>'):
             with patch('clocklogger.output.tempodb.Client') as c:
-                writer = TempoDBWriter(columns)
+                writer = TempoDBWriter('prefix', columns)
             c.assert_called_once_with('clock', '<<key>>', '<<secret>>')
         return writer
 
     def test_raises_error_if_secrets_not_specified(self):
         with self.assertRaises(RuntimeError):
-            writer = TempoDBWriter([])
+            writer = TempoDBWriter('prefix', [])
 
     def test_secrets_are_read_from_environ(self):
-        DATABASE_ID = 'clock'
         writer = self._make_writer()
 
     def test_write_method(self):
@@ -43,7 +42,7 @@ class TempoDBWriterTestCase(unittest.TestCase):
         self.assertEqual(set([point.v for point in args[0]]),
                          set([data['a'], data['b']]))
         self.assertEqual(set([point.key for point in args[0]]),
-                         set(['clock.a', 'clock.b']))
+                         set(['prefix.a', 'prefix.b']))
 
     def test_write_method_raises_exception_on_error(self):
         writer = self._make_writer(['a', 'b'])

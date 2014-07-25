@@ -42,8 +42,8 @@ def main():
         except Exception as err:
             print "Error creating %s: %s" % (cls, err)
     add_writer(TextFileWriter, 'data', 'weather', columns)
-    add_writer(InfluxDBWriter, columns)
-    add_writer(TempoDBWriter, columns)
+    add_writer(InfluxDBWriter, 'weather', columns)
+    add_writer(TempoDBWriter, 'weather', columns)
 
     # Read data & output
     while True:
