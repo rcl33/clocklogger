@@ -1,6 +1,10 @@
 from __future__ import print_function
 from datetime import datetime
-from influxdb import client as influxdb
+
+try:
+    from influxdb import client as influxdb
+except ImportError:
+    influxdb = None
 
 
 def datetime_to_epoch(d):
@@ -9,6 +13,8 @@ def datetime_to_epoch(d):
 
 class InfluxDBWriter(object):
     def __init__(self, columns):
+        if influxdb is None:
+            raise ImportError("Could not import influxdb package")
         self.columns = columns
         self.db = influxdb.InfluxDBClient('localhost', 8086,
                                           'clocklogger', 'pendulum', 'clock')

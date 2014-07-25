@@ -1,11 +1,16 @@
 from __future__ import division
 import numpy as np
-import matplotlib.pyplot as plt
 from numpy import sin, cos, pi
 from datetime import timedelta
 
-#plt.ioff()
 PLOT = False
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    PLOT = False
+
+if PLOT:
+    plt.ioff()
 
 PPS_RATE_ERROR_THRESHOLD = 50e-6
 

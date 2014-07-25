@@ -37,11 +37,17 @@ def main():
 
     # Outputs
     columns = ['time', 'drift', 'amplitude']
-    writers = [
-        TextFileWriter('data', columns),
-        InfluxDBWriter(columns),
-        TempoDBWriter(columns)
-    ]
+
+    # TODO: should do this in a more flexible way
+    writers = []
+    def add_writer(cls, *args):
+        try:
+            writers.append(cls(*args))
+        except Exception as err:
+            print "Error creating %s: %s" % (cls, err)
+    add_writer(TextFileWriter, 'data', columns)
+    add_writer(InfluxDBWriter, columns)
+    add_writer(TempoDBWriter, columns)
 
     # Read samples, analyze
     while True:
