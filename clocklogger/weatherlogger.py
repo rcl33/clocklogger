@@ -27,7 +27,7 @@ def main():
     # Outputs
     columns = ['time'] + fields
     writers = [
-        TextFileWriter('data', columns),
+        TextFileWriter('data', 'weather', columns),
         TempoDBWriter(columns)
     ]
 

@@ -45,7 +45,7 @@ def main():
             writers.append(cls(*args))
         except Exception as err:
             print "Error creating %s: %s" % (cls, err)
-    add_writer(TextFileWriter, 'data', columns)
+    add_writer(TextFileWriter, 'data', 'clock', columns)
     add_writer(InfluxDBWriter, columns)
     add_writer(TempoDBWriter, columns)
 

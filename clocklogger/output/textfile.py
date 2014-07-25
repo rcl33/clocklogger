@@ -10,10 +10,10 @@ def datetime_to_epoch(d):
 
 
 class TextFileWriter(object):
-    def __init__(self, path, columns=None):
+    def __init__(self, path, prefix, columns=None):
         self.path = path
         self.columns = columns
-        self.pattern = "%Y/%m/clock-%Y-%m-%d.txt"
+        self.pattern = "%Y/%m/{}-%Y-%m-%d.txt".format(prefix)
         self.file = None
 
     def __del__(self):
