@@ -1,17 +1,24 @@
 import time
-
+from datetime import datetime
 from source.weather import WeatherStationDataSource
 from output.textfile import TextFileWriter
+from output.influxdb import InfluxDBWriter
 from output.tempodb import TempoDBWriter
 
 
+def round_time_to_interval(t, interval):
+    return t.replace(second=int(t.second//interval)*interval,
+                     microsecond=0)
+
+
 def process(source, writers):
-    for data in source.read():
-        for writer in writers:
-            try:
-                writer.write(data)
-            except Exception as e:
-                print "Writer error [%s]: %s" % (writer.__class__, e)
+    data = source.get_measurements()
+    data['time'] = round_time_to_interval(datetime.utcnow(), 30)  # TODO: interval
+    for writer in writers:
+        try:
+            writer.write(data)
+        except Exception as e:
+            print "Writer error [%s]: %s" % (writer.__class__, e)
 
 
 def sleep_til_next_time(interval):
@@ -20,16 +27,23 @@ def sleep_til_next_time(interval):
 
 
 def main():
-    fields = ['inTemp', 'pressure', 'inHumidity']
+    fields = ['inTemp', 'inHumidity', 'pressure']
     source = WeatherStationDataSource(fields)
     interval = 30.0  # seconds
 
     # Outputs
     columns = ['time'] + fields
-    writers = [
-        TextFileWriter('data', 'weather', columns),
-        TempoDBWriter(columns)
-    ]
+
+    # TODO: should do this in a more flexible way
+    writers = []
+    def add_writer(cls, *args):
+        try:
+            writers.append(cls(*args))
+        except Exception as err:
+            print "Error creating %s: %s" % (cls, err)
+    add_writer(TextFileWriter, 'data', 'weather', columns)
+    add_writer(InfluxDBWriter, columns)
+    add_writer(TempoDBWriter, columns)
 
     # Read data & output
     while True:

@@ -15,9 +15,14 @@ def _get_driver_class():
 class WeatherStationDataSource(object):
     def __init__(self, fields=None):
         """Read weather data from weather station"""
-        # Only required config value is altitude
+        # Fill out required config information
+        config = {
+            'StdArchive': {
+                'record_generation': 'hardware'
+            }
+        }
         driver_class = _get_driver_class()
-        self.driver = driver_class(altitude=0.0)
+        self.driver = driver_class(altitude=0.0, config_dict=config)
         self.fields = fields
 
     def get_measurements(self):
