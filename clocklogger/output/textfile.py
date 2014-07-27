@@ -1,8 +1,10 @@
-from __future__ import print_function
 import os
 import os.path
 from datetime import datetime
 import numpy as np
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def datetime_to_epoch(d):
@@ -39,8 +41,9 @@ class TextFileWriter(object):
             self.file = open(fn, 'at')
             if not file_already_existed:
                 self.file.write("\t".join(cols) + "\n")
-            print("Opened %s file %s" %
-                  ("existing" if file_already_existed else "new", fn))
+            logger.info("Opened %s file %s",
+                        "existing" if file_already_existed else "new",
+                        fn)
         self.file.write("\t".join(formats.get(type(data[k]), "%s") %
                                   data[k] for k in cols) + "\n")
         self.file.flush()

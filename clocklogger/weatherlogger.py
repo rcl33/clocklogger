@@ -1,9 +1,12 @@
 import time
+import logging
 from datetime import datetime
 from source.weather import WeatherStationDataSource
 from output.textfile import TextFileWriter
 from output.influxdb import InfluxDBWriter
 from output.tempodb import TempoDBWriter
+
+logger = logging.getLogger(__name__)
 
 
 def round_time_to_interval(t, interval):
@@ -18,7 +21,7 @@ def process(source, writers):
         try:
             writer.write(data)
         except Exception as e:
-            print "Writer error [%s]: %s" % (writer.__class__, e)
+            logger.error("Writer error [%s]: %s", writer.__class__, e)
 
 
 def sleep_til_next_time(interval):
@@ -27,6 +30,18 @@ def sleep_til_next_time(interval):
 
 
 def main():
+    # Set up logging
+    parser = argparse.ArgumentParser(description='weatherlogger')
+    parser.add_argument('-L', '--log-level', default='warning')
+    args = parser.parse_args()
+
+    numeric_level = getattr(logging, args.log_level.upper(), None)
+    if not isinstance(numeric_level, int):
+        raise ValueError('Invalid log level: %s' % args.log_level)
+    logging.basicConfig(
+        level=numeric_level,
+        format="%(asctime)s %(name)s [%(levelname)s] %(message)s")
+
     fields = ['inTemp', 'inHumidity', 'pressure']
     source = WeatherStationDataSource(fields)
     interval = 30.0  # seconds
@@ -40,7 +55,7 @@ def main():
         try:
             writers.append(cls(*args))
         except Exception as err:
-            print "Error creating %s: %s" % (cls, err)
+            logger.error("Error creating %s: %s", cls, err)
     add_writer(TextFileWriter, 'data', 'weather', columns)
     add_writer(InfluxDBWriter, 'weather', columns)
     add_writer(TempoDBWriter, 'weather', columns)

@@ -1,8 +1,11 @@
 from __future__ import division
 import numpy as np
 from datetime import datetime, timedelta
-import time
 import pyaudio
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class PrerecordedDataSource(object):
     CHANNEL_TICK = 0
@@ -11,7 +14,7 @@ class PrerecordedDataSource(object):
     def __init__(self, filename):
         self.filename = filename
 
-        print "Loading pre-recorded data from %s..." % filename
+        logger.info("Loading pre-recorded data from %s...", filename)
         data = np.load(filename)
         self.fs = data['fs']
         self.y = data['signal']
@@ -41,7 +44,7 @@ class SoundCardDataSource(object):
     def __init__(self, sampling_rate=44100):
         self.fs = sampling_rate
 
-        print "Starting PyAudio..."
+        logger.info("Starting PyAudio...")
         self.pyaudio_manager = pyaudio.PyAudio()
         dev = self.pyaudio_manager.get_default_input_device_info()
         if not self.pyaudio_manager.is_format_supported(
@@ -51,27 +54,29 @@ class SoundCardDataSource(object):
                 input_format=pyaudio.paInt16):
             raise RuntimeError("Unsupported audio format or rate")
 
-        print "Opening stream...",
         self.stream = self.pyaudio_manager.open(
             format=pyaudio.paInt16, channels=2, rate=sampling_rate, input=True)
-        print "done"
+        logger.info("PyAudio ready")
 
         self.buffer = np.empty((0, 2))
         self.buffer_start_time = None
 
     def __del__(self):
-        print "@@@@@@@ closing @@@@@@@@"
+        logger.info("Stopping PyAudio stream")
         self.stream.stop_stream()
         self.stream.close()
         self.pyaudio_manager.terminate()
 
     def read(self, num_samples):
-        print "Trying to read %d samples, %d available..." % (
-            num_samples, self.stream.get_read_available())
+        logger.debug("Trying to read %d samples, %d available...",
+                     num_samples, self.stream.get_read_available())
         raw_data = self.stream.read(num_samples)
-        samples = (np.frombuffer(raw_data, dtype=np.int16).reshape((-1,2))
-            .astype(float) / 2**15)
-        print "done"
+        samples = (np.frombuffer(raw_data, dtype=np.int16)
+                   .reshape((-1, 2))
+                   .astype(float)
+                   / 2**15)
+        logger.debug("Read %d samples, now %d available",
+                     samples.shape[0], self.stream.get_read_available())
         return samples
 
     def get_samples(self, num_samples):

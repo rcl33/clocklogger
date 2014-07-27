@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 def _filter_fields(d, fields):
     """Filter field names in dictionary"""
@@ -6,8 +10,15 @@ def _filter_fields(d, fields):
 
 def _get_driver_class():
     try:
-        from weewx.drivers.ws23xx import WS23xx
-        return WS23xx
+        from weewx.drivers import ws23xx
+
+        # Patch logging functions to use normal logger not syslog
+        ws23xx.logdbg = lambda msg: logger.debug("WS23xx: %s", msg)
+        ws23xx.loginf = lambda msg: logger.info("WS23xx: %s", msg)
+        ws23xx.logerr = lambda msg: logger.error("WS23xx: %s", msg)
+        ws23xx.logcrt = lambda msg: logger.critical("WS23xx: %s", msg)
+
+        return ws23xx.WS23xx
     except ImportError:
         raise ImportError("WS23xx driver not available")
 

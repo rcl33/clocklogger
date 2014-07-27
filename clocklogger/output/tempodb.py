@@ -1,9 +1,12 @@
-from __future__ import print_function, absolute_import
+from __future__ import absolute_import
 
 import os
 import os.path
 from tempodb.client import Client
 from tempodb.protocol import DataPoint
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class TempoDBWriter(object):
@@ -23,7 +26,7 @@ class TempoDBWriter(object):
 
     def write(self, data):
         t = data['time']
-        print(data)
+        logger.debug("Data: %s", data)
         points = [DataPoint.from_data(t, float(data[k]),
                                       key='%s.%s' % (self.base_key, k))
                   for k in self.columns if k != 'time']

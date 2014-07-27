@@ -1,9 +1,13 @@
+import argparse
 import time
+import logging
 from input import PrerecordedDataSource, SoundCardDataSource
 from analysis import ClockAnalyser, DataError
 from output.textfile import TextFileWriter
 from output.influxdb import InfluxDBWriter
 from output.tempodb import TempoDBWriter
+
+logger = logging.getLogger(__name__)
 
 
 def get_last_drift():
@@ -26,11 +30,23 @@ def process(analyser, writers):
             try:
                 writer.write(data)
             except Exception as e:
-                print "Writer error [%s]: %s" % (writer.__class__, e)
+                logger.error("Writer error [%s]: %s", writer.__class__, e)
         save_last_drift(data['drift'])
 
 
 def main():
+    # Set up logging
+    parser = argparse.ArgumentParser(description='clocklogger')
+    parser.add_argument('-L', '--log-level', default='warning')
+    args = parser.parse_args()
+
+    numeric_level = getattr(logging, args.log_level.upper(), None)
+    if not isinstance(numeric_level, int):
+        raise ValueError('Invalid log level: %s' % args.log_level)
+    logging.basicConfig(
+        level=numeric_level,
+        format="%(asctime)s %(name)s [%(levelname)s] %(message)s")
+
     #source = PrerecordedDataSource('../../dataq/record_20130331_0002_100s.npz')
     source = SoundCardDataSource()
     analyser = ClockAnalyser(source, initial_drift=get_last_drift())
@@ -44,7 +60,7 @@ def main():
         try:
             writers.append(cls(*args))
         except Exception as err:
-            print "Error creating %s: %s" % (cls, err)
+            logger.error("Error creating %s: %s", cls, err)
     add_writer(TextFileWriter, 'data', 'clock', columns)
     add_writer(InfluxDBWriter, 'clock', columns)
     add_writer(TempoDBWriter, 'clock', columns)
@@ -54,8 +70,8 @@ def main():
         try:
             process(analyser, writers)
         except DataError as err:
-            print "Error: %s" % err
-            print "Trying to start again in 3 seconds..."
+            logger.error("Error: %s. Trying to start again in 3 seconds...",
+                         err)
             time.sleep(3)
 
 if __name__ == "__main__":

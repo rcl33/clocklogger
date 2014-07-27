@@ -1,5 +1,7 @@
-from __future__ import print_function
 from datetime import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 try:
     from influxdb import client as influxdb
@@ -19,7 +21,7 @@ class InfluxDBWriter(object):
         self.columns = columns
         self.db = influxdb.InfluxDBClient('localhost', 8086,
                                           'clocklogger', 'pendulum', 'clock')
-        print("Opened connection to InfluxDB")
+        logger.info("Opened connection to InfluxDB")
 
     def write(self, data):
         data = dict(data)
