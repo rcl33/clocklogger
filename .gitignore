@@ -2,3 +2,4 @@
 /venv/
 /cover/
 /.coverage
+.ipynb_checkpoints
