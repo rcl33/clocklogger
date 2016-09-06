@@ -1,4 +1,5 @@
 import time
+import argparse
 import logging
 from datetime import datetime
 from source.weather import WeatherStationDataSource
@@ -57,8 +58,8 @@ def main():
         except Exception as err:
             logger.error("Error creating %s: %s", cls, err)
     add_writer(TextFileWriter, 'data', 'weather', columns)
-    add_writer(InfluxDBWriter, 'weather', columns)
-    add_writer(TempoDBWriter, 'weather', columns)
+    #add_writer(InfluxDBWriter, 'weather', columns)
+    #add_writer(TempoDBWriter, 'weather', columns)
 
     # Read data & output
     while True:
