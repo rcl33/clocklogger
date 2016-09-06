@@ -15,7 +15,7 @@ class TextFileWriter(object):
     def __init__(self, path, prefix, columns=None):
         self.path = path
         self.columns = columns
-        self.pattern = "%Y/%m/{}-%Y-%m-%d.txt".format(prefix)
+        self.pattern = "%Y/%m/{}%Y-%m-%d.txt".format(prefix)
         self.file = None
 
     def __del__(self):
@@ -39,11 +39,9 @@ class TextFileWriter(object):
                 os.makedirs(os.path.dirname(fn))
             file_already_existed = os.path.exists(fn)
             self.file = open(fn, 'at')
-            if not file_already_existed:
-                self.file.write("\t".join(cols) + "\n")
             logger.info("Opened %s file %s",
                         "existing" if file_already_existed else "new",
                         fn)
-        self.file.write("\t".join(formats.get(type(data[k]), "%s") %
+        self.file.write(" ".join(formats.get(type(data[k]), "%s") %
                                   data[k] for k in cols) + "\n")
         self.file.flush()
