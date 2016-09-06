@@ -62,8 +62,8 @@ def main():
         except Exception as err:
             logger.error("Error creating %s: %s", cls, err)
     add_writer(TextFileWriter, 'data', 'clock', columns)
-    add_writer(InfluxDBWriter, 'clock', columns)
-    add_writer(TempoDBWriter, 'clock', columns)
+    #add_writer(InfluxDBWriter, 'clock', columns)
+    #add_writer(TempoDBWriter, 'clock', columns)
 
     # Read samples, analyze
     while True:
