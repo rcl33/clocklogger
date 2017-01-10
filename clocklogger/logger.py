@@ -1,11 +1,11 @@
 import argparse
 import time
 import logging
-from input import PrerecordedDataSource, SoundCardDataSource
-from analysis import ClockAnalyser, DataError
-from output.textfile import TextFileWriter
-from output.influxdb import InfluxDBWriter
-from output.tempodb import TempoDBWriter
+from .input import PrerecordedDataSource, SoundCardDataSource
+from .analysis import ClockAnalyser, DataError
+from .output.textfile import TextFileWriter
+# from .output.influxdb import InfluxDBWriter
+# from .output.tempodb import TempoDBWriter
 
 logger = logging.getLogger(__name__)
 
