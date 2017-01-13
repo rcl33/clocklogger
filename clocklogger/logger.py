@@ -66,7 +66,7 @@ def do_logging(invert):
 def format_soundcheck_stats(d):
     pos = '#' * int(30 * d['max'])
     neg = '#' * int(30 * d['min'])
-    return ' ({: 2}) -|{:>30}0{:<30}|+ ({: 2})'.format(d['nneg'], neg, pos, d['npos'])
+    return ' ({:2}) -|{:>30}0{:<30}|+ ({:2})'.format(d['nneg'], neg, pos, d['npos'])
 
 
 def do_soundcheck(invert):

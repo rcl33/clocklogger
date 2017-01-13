@@ -55,6 +55,7 @@ class SoundCardDataSource(object):
             raise RuntimeError("Unsupported audio format or rate")
 
         self.stream = self.pyaudio_manager.open(
+            frames_per_buffer=4096,
             format=pyaudio.paInt16, channels=2, rate=sampling_rate, input=True)
         logger.info("PyAudio ready")
 
