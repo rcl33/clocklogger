@@ -18,7 +18,7 @@ def _get_driver_class():
         ws23xx.logerr = lambda msg: logger.error("WS23xx: %s", msg)
         ws23xx.logcrt = lambda msg: logger.critical("WS23xx: %s", msg)
 
-        return ws23xx.WS23xx
+        return ws23xx.WS23xxDriver
     except ImportError:
         raise ImportError("WS23xx driver not available")
 
