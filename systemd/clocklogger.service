@@ -5,8 +5,8 @@ WantedBy=multi-user.target
 Description=Clocklogger
 
 [Service]
-Environment=TEMPODB_API_KEY="34dc77a63b4f4c62bbf676e66e5e9129" TEMPODB_API_SECRET="ece28691590949908fdd63e3ed98a30a"
-ExecStart=/usr/bin/python clocklogger/logger.py -L debug
+Environment=
+ExecStart=/usr/bin/python clocklogger/logger.py -L info
 Restart=on-failure
 User=clock
 Group=clock
