@@ -82,6 +82,30 @@ class ClockAnalyser(object):
             last_time = t
             yield {"time": t, "drift": drift, "amplitude": amplitude}
 
+    def soundcheck(self):
+        """Read samples from source and yield drift & amplitude values"""
+        while True:
+            # Read some samples
+            num_samples = 6 * self.source.fs
+            try:
+                samples = -self.source.get_samples(num_samples)
+                self.source.consume(num_samples)
+            except EOFError:
+                break
+
+            # Stats
+            pps = samples[:, self.source.CHANNEL_PPS]
+            tick = samples[:, self.source.CHANNEL_TICK]
+
+            # Analyse to find edges
+            i_pos_pps,  i_neg_pps  = self.find_edges(pps)
+            i_pos_tick, i_neg_tick = self.find_edges(tick)
+
+            yield {
+                'pps': { 'min': pps.min(), 'max': pps.max(), 'npos': len(i_pos_pps), 'nneg': len(i_neg_pps) },
+                'tick': { 'min': tick.min(), 'max': tick.max(), 'npos': len(i_pos_tick), 'nneg': len(i_neg_tick) },
+            }
+
     def generate_edge_groups(self, fit_decay=False):
         """Read samples from source, and generate indices of edge groups"""
         while True:
