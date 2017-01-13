@@ -21,9 +21,10 @@ def round_time_to_three_seconds(t):
     return t.replace(second = (t.second//3)*3, microsecond = 0)
 
 class ClockAnalyser(object):
-    def __init__(self, source, initial_drift=0):
+    def __init__(self, source, initial_drift=0, invert=False):
         self.source = source
         self.drift_offset = initial_drift
+        self.invert = invert
         self.last_drift = None
         self.cache = np.empty((0, 2))
         self.cache_start_time = None
@@ -88,7 +89,9 @@ class ClockAnalyser(object):
             # Read some samples
             num_samples = 6 * self.source.fs
             try:
-                samples = -self.source.get_samples(num_samples)
+                samples = self.source.get_samples(num_samples)
+                if self.invert:
+                    samples *= -1
                 self.source.consume(num_samples)
             except EOFError:
                 break
@@ -112,7 +115,9 @@ class ClockAnalyser(object):
             # Read some samples
             num_samples = 6 * self.source.fs
             try:
-                samples = -self.source.get_samples(num_samples)
+                samples = self.source.get_samples(num_samples)
+                if self.invert:
+                    samples *= -1
             except EOFError:
                 break
 

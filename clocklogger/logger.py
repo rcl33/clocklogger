@@ -34,10 +34,10 @@ def process(analyser, writers):
         save_last_drift(data['drift'])
 
 
-def do_logging():
+def do_logging(invert):
     #source = PrerecordedDataSource('../../dataq/record_20130331_0002_100s.npz')
     source = SoundCardDataSource()
-    analyser = ClockAnalyser(source, initial_drift=get_last_drift())
+    analyser = ClockAnalyser(source, initial_drift=get_last_drift(), invert=invert)
 
     # Outputs
     columns = ['time', 'drift', 'amplitude']
@@ -64,14 +64,14 @@ def do_logging():
 
 
 def format_soundcheck_stats(d):
-    pos = '#' * (30 * d['max'])
-    neg = '#' * (30 * d['min'])
-    return ' ({}) -|{:>30}0{:<30}|+ ({})'.format(d['nneg'], neg, pos, d['npos'])
+    pos = '#' * int(30 * d['max'])
+    neg = '#' * int(30 * d['min'])
+    return ' ({: 2}) -|{:>30}0{:<30}|+ ({: 2})'.format(d['nneg'], neg, pos, d['npos'])
 
 
-def do_soundcheck():
+def do_soundcheck(invert):
     source = SoundCardDataSource()
-    analyser = ClockAnalyser(source)
+    analyser = ClockAnalyser(source, invert=invert)
     print '\nSOUNDCHECK\n'
     for data in analyser.soundcheck():
         print 'PPS:  ' + format_soundcheck_stats(data['pps'])
@@ -84,6 +84,7 @@ def main():
     parser = argparse.ArgumentParser(description='clocklogger')
     parser.add_argument('-L', '--log-level', default='warning')
     parser.add_argument('-S', '--soundcheck', action='store_true')
+    parser.add_argument('-I', '--invert-signals', action='store_true')
     args = parser.parse_args()
 
     numeric_level = getattr(logging, args.log_level.upper(), None)
@@ -94,9 +95,9 @@ def main():
         format="%(asctime)s %(name)s [%(levelname)s] %(message)s")
 
     if args.soundcheck:
-        do_soundcheck()
+        do_soundcheck(args.invert_signals)
     else:
-        do_logging()
+        do_logging(args.invert_signals)
 
 
 if __name__ == "__main__":
