@@ -6,9 +6,10 @@ Description=Clocklogger
 
 [Service]
 Environment=
-ExecStart=/usr/bin/python clocklogger/logger.py -L info
+ExecStartPre=/bin/bash /home/pi/bin/Record_from_lineIn.sh
+ExecStart=/usr/local/bin/clocklogger
 Restart=on-failure
-User=clock
-Group=clock
-WorkingDirectory=/home/clock/clocklogger
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/clocklogger
 

@@ -2,13 +2,13 @@
 WantedBy=multi-user.target
 
 [Unit]
-Description=Clocklogger
+Description=Weatherlogger
 
 [Service]
 Environment=PYTHONPATH=/usr/share/weewx
-ExecStart=/usr/bin/python clocklogger/weatherlogger.py
+ExecStart=/usr/local/bin/weatherlogger
 Restart=on-failure
-User=clock
-Group=clock
-WorkingDirectory=/home/clock/clocklogger
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/clocklogger
 
