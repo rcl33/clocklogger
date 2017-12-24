@@ -29,7 +29,7 @@ class ClockAnalyser(object):
         self.cache = np.empty((0, 2))
         self.cache_start_time = None
         self.pretrigger = 0.2 # seconds
-        self.edge_level = 0.2
+        self.edge_level = 0.1
         self.shim_width = 24.0 # millimetres ~= milliradians (at 1m from pivot)
         self.decay_fit_duration = 0.05  # duration of fit segment (s)
         self.decay_fit_delay = 0.003 # wait after crossing threshold (s)
