@@ -92,9 +92,7 @@ class SoundCardDataSource(object):
 
     def consume(self, num_samples):
         """Mark num_samples as having been used"""
-        num_to_read = num_samples - self.buffer.shape[0]
-        if num_to_read > 0:
-            self.get_samples(num_to_read)
+        self.get_samples(num_samples)
         assert self.buffer.shape[0] >= num_samples
         self.buffer = self.buffer[num_samples:]
 
