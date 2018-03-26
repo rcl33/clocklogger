@@ -34,6 +34,7 @@ class ClockAnalyser(object):
         self.decay_fit_duration = 0.05  # duration of fit segment (s)
         self.decay_fit_delay = 0.003 # wait after crossing threshold (s)
         self.decay_fit_level = 0.5 # y-value to use as reference point
+        self.debounce_interval = 0.02 # Ignore extra transitions for a while (s)
 
     def process(self, pps_edge='up', sampling_rate_from_pps=False, fit_decay=False):
         """Read samples from source and yield drift & amplitude values"""
@@ -214,12 +215,25 @@ class ClockAnalyser(object):
 
             yield t, (i_pos_pps, i_neg_pps), (i_pos_tick, i_neg_tick)
 
+    def debounce(self, edges):
+        """Remove extra edges caused by ringing on transitions"""
+
+        mask_to = 0     # edges prior to this sample number will be ignored
+        cleaned = []    # cleaned list of edges
+
+        for e in edges:
+            if e >= mask_to:
+                cleaned.append(e)
+                mask_to = e + self.debounce_interval * self.source.fs;
+
+        return cleaned
+
     def find_edges(self, samples):
         above = (samples >  self.edge_level).astype(int)
         below = (samples < -self.edge_level).astype(int)
         i_pos = np.where(np.diff(above) > 0)[0]
         i_neg = np.where(np.diff(below) > 0)[0]
-        return i_pos, i_neg
+        return self.debounce(i_pos), self.debounce(i_neg)
 
     def fit_decays(self, y, i_edges):
         """
