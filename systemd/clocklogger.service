@@ -6,8 +6,8 @@ Description=Clocklogger
 
 [Service]
 Environment=
-ExecStartPre=/bin/bash /home/pi/bin/Record_from_lineIn.sh
-ExecStart=/usr/local/bin/clocklogger
+ExecStartPre=/bin/bash /home/pi/bin/Record_from_Linein.sh
+ExecStart=/home/pi/.local/bin/clocklogger
 Restart=on-failure
 User=pi
 Group=pi

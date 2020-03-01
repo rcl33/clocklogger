@@ -1,4 +1,4 @@
-from __future__ import division
+
 import numpy as np
 from numpy import sin, cos, pi
 from datetime import timedelta
@@ -51,9 +51,9 @@ class ClockAnalyser(object):
             # Calculate amplitude
             amplitude = self.calculate_amplitude(i_pos_tick, i_neg_tick)
 
-            print(("Found ticks: PPS  %5d up, %5d down\n" +
+            print((("Found ticks: PPS  %5d up, %5d down\n" +
                    "             Tick %5d up, %5d down") \
-                 % tuple([len(_) for _ in [i_pos_pps, i_neg_pps, i_pos_tick, i_neg_tick]]))
+                 % tuple([len(_) for _ in [i_pos_pps, i_neg_pps, i_pos_tick, i_neg_tick]])))
 
             # Unwrap phase
             if self.last_drift is None:
@@ -62,10 +62,10 @@ class ClockAnalyser(object):
                 self.last_drift = self.drift_offset + drift_delta
             if (self.drift_offset + drift_delta) > (self.last_drift + 0.5):
                 self.drift_offset -= 1
-                print "(offset -1 sec to %d)" % self.drift_offset
+                print("(offset -1 sec to %d)" % self.drift_offset)
             elif (self.drift_offset + drift_delta) < (self.last_drift - 0.5):
                 self.drift_offset += 1
-                print "(offset +1 sec to %d)" % self.drift_offset
+                print("(offset +1 sec to %d)" % self.drift_offset)
             self.last_drift = drift = self.drift_offset + drift_delta
 
             # Make the time be neat; multiple of 3 seconds from midnight
@@ -75,10 +75,10 @@ class ClockAnalyser(object):
             t = round_time_to_three_seconds(t)
             if last_time is not None:
                 if t == last_time:
-                    print "------ skipping repeated time %s" % t
+                    print("------ skipping repeated time %s" % t)
                     continue
                 if t == last_time + timedelta(seconds=6):
-                    print "------------- filling gap before %s" % t
+                    print("------------- filling gap before %s" % t)
                     yield {"time": t - timedelta(seconds = 3),
                            "drift": drift, "amplitude": amplitude}
             last_time = t
@@ -123,15 +123,15 @@ class ClockAnalyser(object):
                 break
 
             # Analyse to find edges
-            i_pos_pps,  i_neg_pps  = self.find_edges(samples[:,self.source.CHANNEL_PPS ])
-            i_pos_tick, i_neg_tick = self.find_edges(samples[:,self.source.CHANNEL_TICK])
+            i_pos_pps,  i_neg_pps  = self.find_edges(samples[:, self.source.CHANNEL_PPS ])
+            i_pos_tick, i_neg_tick = self.find_edges(samples[:, self.source.CHANNEL_TICK])
 
             # Fit decay to improve accuracy if required
             if fit_decay:
-                i_pos_pps  = self.fit_decays( samples[:,self.source.CHANNEL_PPS ], i_pos_pps)
-                i_neg_pps  = self.fit_decays(-samples[:,self.source.CHANNEL_PPS ], i_neg_pps)
-                i_pos_tick = self.fit_decays( samples[:,self.source.CHANNEL_TICK], i_pos_tick)
-                i_neg_tick = self.fit_decays(-samples[:,self.source.CHANNEL_TICK], i_neg_tick)
+                i_pos_pps  = self.fit_decays( samples[:, self.source.CHANNEL_PPS ], i_pos_pps)
+                i_neg_pps  = self.fit_decays(-samples[:, self.source.CHANNEL_PPS ], i_neg_pps)
+                i_pos_tick = self.fit_decays( samples[:, self.source.CHANNEL_TICK], i_pos_tick)
+                i_neg_tick = self.fit_decays(-samples[:, self.source.CHANNEL_TICK], i_neg_tick)
 
             # Find which is the 'down' tick: the IR signal looks like this:
             #
@@ -146,7 +146,7 @@ class ClockAnalyser(object):
             # the outer gap ([0]+3secs - [3]).
 
             if len(i_pos_tick) < 3:
-                print "Not enough ticks"
+                print("Not enough ticks")
                 if PLOT:
                     #plt.clf()
                     fig, ax = plt.subplots(2, sharex=True)
@@ -169,11 +169,11 @@ class ClockAnalyser(object):
             if tick_gap_1 > tick_gap_2:
                 # down tick 0 is the start of the down-swing
                 iref = i_pos_tick[0]
-                print "First tick is down-swing"
+                print("First tick is down-swing")
             else:
                 # down tick 1 is the start of the down-swing
                 iref = i_pos_tick[1]
-                print "Second tick is down-swing"
+                print("Second tick is down-swing")
 
             # Consume samples belonging to this chunk
             i_put_back = iref + (3.0 - self.pretrigger)*self.source.fs
@@ -185,7 +185,7 @@ class ClockAnalyser(object):
 
             # XXX This is messy, checking multiple times
             if len(i_pos_tick) < 3:
-                print "Not enough ticks after down-swing"
+                print("Not enough ticks after down-swing")
                 self.source.consume(len(samples))
                 continue
 
@@ -209,7 +209,7 @@ class ClockAnalyser(object):
             # Time of reference tick
             t = self.source.time + timedelta(seconds = iref / self.source.fs)
 
-            print "Consuming %d samples" % i_put_back
+            print("Consuming %d samples" % i_put_back)
             #self.put_back_samples(samples[i_put_back:])
             self.source.consume(i_put_back)
 
@@ -258,7 +258,7 @@ class ClockAnalyser(object):
         # Find mean sample rate from PPS signal
         fs_mean = np.mean(np.diff(i_edges))
         fs_var = np.std(np.diff(i_edges))
-        print i_edges, fs_mean, fs_var
+        print(i_edges, fs_mean, fs_var)
         if abs(fs_mean / self.source.fs - 1) > PPS_RATE_ERROR_THRESHOLD:
             raise DataError("Sample rate is off by too much: %+d ppm"
                             % (1e6*abs(fs_mean/self.source.fs-1)))
@@ -266,7 +266,7 @@ class ClockAnalyser(object):
         # PPS should be +/- 1us. Warn if std.deviation * 3, say, is greater than this.
         #  i.e. 9*variance > (1e-6 * fs)^2? but this is rather less than 1 sample...
         if fs_var > 2: #  warn if sample rate seems too variable (empirical)
-            print "** Warning: PPS signal interval variance is high (%d)" % fs_var
+            print("** Warning: PPS signal interval variance is high (%d)" % fs_var)
 
     def calculate_drift(self, ticks, pps, relative_to_pps=False):
         pps_ref = [i for i in pps if i >= ticks[0]]

@@ -5,7 +5,7 @@ logger = logging.getLogger(__name__)
 
 def _filter_fields(d, fields):
     """Filter field names in dictionary"""
-    return dict([item for item in d.items() if item[0] in fields])
+    return dict([item for item in list(d.items()) if item[0] in fields])
 
 
 def _get_driver_class():

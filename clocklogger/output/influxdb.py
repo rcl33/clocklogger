@@ -4,7 +4,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 try:
-    from influxdb import client as influxdb
+    from .influxdb import client as influxdb
 except ImportError:
     influxdb = None
 

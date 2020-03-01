@@ -6,7 +6,7 @@ Description=Weatherlogger
 
 [Service]
 Environment=PYTHONPATH=/usr/share/weewx
-ExecStart=/usr/local/bin/weatherlogger
+ExecStart=/home/pi/.local/bin/weatherlogger
 Restart=on-failure
 User=pi
 Group=pi

@@ -1,4 +1,4 @@
-from __future__ import division
+
 import numpy as np
 from datetime import datetime, timedelta
 import pyaudio
@@ -88,13 +88,13 @@ class SoundCardDataSource(object):
             self.buffer = np.r_[ self.buffer, new_samples ]
             self.buffer_start_time = \
                 datetime.utcnow() - timedelta(seconds=self.buffer.shape[0]/self.fs)
-        return self.buffer[:num_samples]
+        return self.buffer[:int(num_samples)]
 
     def consume(self, num_samples):
         """Mark num_samples as having been used"""
         self.get_samples(num_samples)
         assert self.buffer.shape[0] >= num_samples
-        self.buffer = self.buffer[num_samples:]
+        self.buffer = self.buffer[int(num_samples):]
 
     @property
     def time(self):

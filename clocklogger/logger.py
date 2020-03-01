@@ -72,11 +72,11 @@ def format_soundcheck_stats(d):
 def do_soundcheck(invert):
     source = SoundCardDataSource()
     analyser = ClockAnalyser(source, invert=invert)
-    print '\nSOUNDCHECK\n'
+    print('\nSOUNDCHECK\n')
     for data in analyser.soundcheck():
-        print 'PPS:  ' + format_soundcheck_stats(data['pps'])
-        print 'Tick: ' + format_soundcheck_stats(data['tick'])
-        print
+        print('PPS:  ' + format_soundcheck_stats(data['pps']))
+        print('Tick: ' + format_soundcheck_stats(data['tick']))
+        print()
 
 
 def main():
