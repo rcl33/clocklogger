@@ -5,7 +5,7 @@ WantedBy=multi-user.target
 Description=Weatherlogger
 
 [Service]
-Environment=PYTHONPATH=/usr/share/weewx
+Environment=PYTHONPATH=/home/pi/weewx/bin
 ExecStart=/home/pi/.local/bin/weatherlogger
 Restart=on-failure
 User=pi

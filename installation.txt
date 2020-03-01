@@ -1,0 +1,57 @@
+[[[ Add the following line to /boot/config.txt to enable the Cirrus Logic card driver ]]]
+
+dtoverlay=rpi-cirrus-wm5102
+
+
+[[[ Download cirrus-ng-scripts.tgz and extract it for example in /home/pi/bin ]]]
+
+wget http://www.horus.com/~hias/tmp/cirrus/cirrus-ng-scripts.tgz
+mkdir bin
+cd bin
+tar zxf ../cirrus-ng-scripts.tgz
+
+
+[[[ get the weewx ws23xx driver ]]]
+
+cd /home/pi
+git clone https://github.com/weewx/weewx.git
+
+
+[[[ Get the clocklogger code ]]]
+
+cd /home/pi
+git clone https://github.com/ricklupton/clocklogger.git
+
+
+[[[ install flit and use it to install the clocklogger software ]]]
+
+pip3 install flit
+cd clocklogger
+python3 -m flit install
+
+
+[[[ install necessary python package(s) ]]]
+
+sudo apt-get install python3-pyaudio
+
+
+[[[ Mount data memory stick and set symbolic link ]]]
+
+sudo umount /dev/sda1
+sudo mkdir /mnt/ClockData
+
+[[[ add the following line to /etc/fstab -- n.b. separators are tabs ]]]
+
+LABEL=ClockData /mnt/ClockData  ext4    defaults,noatime,nofail 0       0
+
+sudo mount -a
+
+ln -s /mnt/ClockData/clocklog /home/pi/clocklogger/data
+
+
+[[[ install service files ]]]
+
+cd ~/clocklogger
+sudo cp systemd/*.service /etc/systemd/system/
+sudo systemctl enable clocklogger
+sudo systemctl enable weatherlogger

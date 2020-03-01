@@ -5,7 +5,7 @@ from datetime import datetime
 from .source.weather import WeatherStationDataSource
 from .output.textfile import TextFileWriter
 from .output.influxdb import InfluxDBWriter
-from .output.tempodb import TempoDBWriter
+# from .output.tempodb import TempoDBWriter
 
 logger = logging.getLogger(__name__)
 
